@@ -1,0 +1,54 @@
+{
+  "authors": [
+    "Andrea Martinelli"
+  ],
+  "version": "1.0.1.5380",
+  "projectUrl": "http://shaman.io",
+  "iconUrl": "http://shaman.io/images/shaman-nuget-icon.png",
+  "description": "Provides a binary serialization mechanism that supports cycles, delegates, events, tasks, string deduplication and custom serializers.",
+  "compile": [],
+  "compilationOptions": {
+    "define": [
+      "STANDALONE",
+      "NATIVE_HTTP",
+      "REFLECTION_EXTENSIONS_INTERNAL"
+    ],
+    "keyFile": "ShamanOpenSourceKey.snk"
+  },
+  "dependencies": {
+    "Shaman.FileSystem": "1.0.0-beta-4175",
+    "Shaman.Reflection": "1.0.0.9",
+    "Shaman.Configuration.Metadata": "1.0.0-beta-4922",
+    "Shaman.CommonExtensions": "1.0.0-beta-4897",
+    "Shaman.ValueString": "1.0.2.9",
+    "Shaman.Dom": "1.0.1.9"
+  },
+  "frameworks": {
+    "net45": {},
+    "dotnet5.4": {
+      "compilationOptions": {
+        "define": [
+          "CORECLR"
+        ]
+      },
+      "dependencies": {
+        "System.Runtime": "4.0.21",
+        "System.Runtime.Extensions": "4.0.0",
+        "System.Threading": "4.0.0",
+        "System.Threading.Tasks": "4.0.0",
+        "System.IO": "4.0.0",
+        "System.IO.FileSystem": "4.0.1-beta-23225",
+        "System.Globalization": "4.0.0",
+        "System.Reflection": "4.1.0-rc2-23623",
+        "System.Reflection.Extensions": "4.0.0",
+        "System.Collections": "4.0.0",
+        "System.Collections.Concurrent": "4.0.0",
+        "System.Console": "4.0.0-rc2-23623",
+        "System.Reflection.Emit": "4.0.1-beta-23516",
+        "System.Reflection.TypeExtensions": "4.1.0-rc3-23808",
+        "System.Reflection.Emit.ILGeneration": "4.0.1-rc3-23808",
+        "System.Reflection.Emit.Lightweight": "4.0.1-rc3-23808"
+      }
+    }
+  }
+}
