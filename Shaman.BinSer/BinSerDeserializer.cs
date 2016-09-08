@@ -208,7 +208,7 @@ namespace Shaman.Runtime.Serialization
                             }
                             if (reducerType != null)
                             {
-                                var reducer = Activator.CreateInstance(reducerType.MakeGenericType(methodParamTypes.ToArray()), new object[] {  method });
+                                var reducer = Activator.CreateInstance(reducerType.MakeGenericTypeFast(methodParamTypes.ToArray()), new object[] {  method });
                                 Sanity.Assert(target == null);
                                 var call = reducer.GetType().GetMethod("Call", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                                 return call.CreateDelegate(type, reducer);

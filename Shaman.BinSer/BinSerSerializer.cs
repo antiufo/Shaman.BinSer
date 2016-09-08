@@ -45,6 +45,7 @@ namespace Shaman.Runtime.Serialization
         }
 
 
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         private readonly static MethodInfo writeObjMethod = typeof(BinSerSerializer).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).First(x => x.Name == "WriteObjectInternal" && x.GetParameters().Length == 2);
 
 
@@ -142,6 +143,7 @@ namespace Shaman.Runtime.Serialization
         }
         private List<object> objectStack = new List<object>();
 
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         private readonly static Type PointerType = typeof(IntPtr).Assembly().GetType("System.Reflection.Pointer", true, false);
 
         internal void WriteObjectInternal(object obj, Type expectedType)
@@ -366,7 +368,7 @@ namespace Shaman.Runtime.Serialization
         }
 
 
-
+        [StaticFieldCategory(StaticFieldCategory.Cache)]
         private static ConcurrentDictionary<Type, Action<BinSerSerializer, object>> _writeEachFieldCache = new ConcurrentDictionary<Type, Action<BinSerSerializer, object>>();
 
         [Configuration]

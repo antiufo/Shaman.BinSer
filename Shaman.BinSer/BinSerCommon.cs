@@ -15,7 +15,7 @@ namespace Shaman.Runtime.Serialization
     [RestrictedAccess]
     public class BinSerCommon
     {
-
+        [StaticFieldCategory(StaticFieldCategory.Cache)]
         private static ConcurrentDictionary<Type, List<FieldInfo>> fieldsDict = new ConcurrentDictionary<Type, List<FieldInfo>>();
 
         internal static List<FieldInfo> GetFields(Type type)
@@ -73,34 +73,42 @@ namespace Shaman.Runtime.Serialization
             fieldsDict.TryAdd(type, q);
             return q;
         }
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Assembly mscorlib = typeof(Type).Assembly();
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimeTypeType =
             mscorlib.GetType("System.RuntimeType", false, false) ??
             mscorlib.GetType("System.MonoType");
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimeAssemblyType =
             mscorlib.GetType("System.Reflection.RuntimeAssembly", false, false) ??
             mscorlib.GetType("System.Reflection.MonoAssembly");
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimeMethodInfoType =
             mscorlib.GetType("System.Reflection.RuntimeMethodInfo", false, false) ??
             mscorlib.GetType("System.Reflection.MonoMethod");
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimeFieldInfoType =
             mscorlib.GetType("System.Reflection.RtFieldInfo", false, false) ??
             mscorlib.GetType("System.Reflection.MonoField");
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimePropertyInfoType =
             mscorlib.GetType("System.Reflection.RuntimePropertyInfo", false, false) ??
             mscorlib.GetType("System.Reflection.MonoProperty");
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static Type RuntimeEventInfoType =
             mscorlib.GetType("System.Reflection.RuntimeEventInfo", false, false) ??
             mscorlib.GetType("System.Reflection.MonoEvent");
-
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal readonly static MethodInfo GetTypeFromHandleMethod =
             typeof(Type).GetMethod("GetTypeFromHandle");
 
 
-
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         private readonly static object TplEtwProviderLog =
             typeof(Type).Assembly().GetType("System.Threading.Tasks.TplEtwProvider")?.GetField("Log", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
 
+        [StaticFieldCategory(StaticFieldCategory.Stable)]
         internal static readonly IEnumerable<object> WellKnownObjects = new object[] {
                 typeof(string),
                 typeof(string).Assembly(),
@@ -111,7 +119,9 @@ namespace Shaman.Runtime.Serialization
                 CultureInfo.InvariantCulture
         };
 
+        [StaticFieldCategory(StaticFieldCategory.Configuration)]
         internal readonly static Dictionary<Type, Action<BinSerSerializer, object>> customWriters = new Dictionary<Type, Action<BinSerSerializer, object>>();
+        [StaticFieldCategory(StaticFieldCategory.Configuration)]
         internal readonly static Dictionary<Type, Func<BinSerDeserializer, Type, object>> customReaders = new Dictionary<Type, Func<BinSerDeserializer, Type, object>>();
 
 
@@ -332,7 +342,7 @@ namespace Shaman.Runtime.Serialization
                 ser.WriteObjectInternal(x.Count, typeof(int));
 
                 var comparer = x.GetType().GetProperty("Comparer").GetValue(x);
-                var defComparer = typeof(EqualityComparer<>).MakeGenericType(keyType).GetProperty("Default", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                var defComparer = typeof(EqualityComparer<>).MakeGenericTypeFast(keyType).GetProperty("Default", BindingFlags.Public | BindingFlags.Static).GetValue(null);
                 ser.WriteObjectInternal(comparer == defComparer ? null : comparer);
 
                 foreach (System.Collections.DictionaryEntry item in x)
@@ -370,7 +380,7 @@ namespace Shaman.Runtime.Serialization
                 ser.WriteObjectInternal(count, typeof(int));
 
                 var comparer = x.GetType().GetProperty("Comparer").GetValue(x);
-                var defComparer = typeof(EqualityComparer<>).MakeGenericType(elemType).GetProperty("Default", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                var defComparer = typeof(EqualityComparer<>).MakeGenericTypeFast(elemType).GetProperty("Default", BindingFlags.Public | BindingFlags.Static).GetValue(null);
                 ser.WriteObjectInternal(comparer == defComparer ? null : comparer);
 
                 foreach (var item in x)
