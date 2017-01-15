@@ -9,6 +9,10 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Shaman.Runtime.ReflectionExtensions;
+#if !STANDALONE
+using Shaman.Annotations;
+#endif
 
 namespace Shaman.Runtime.Serialization
 {
@@ -340,9 +344,16 @@ namespace Shaman.Runtime.Serialization
                 var keyType = gen[0];
                 var valueType = gen[1];
                 ser.WriteObjectInternal(x.Count, typeof(int));
-
-                var comparer = x.GetType().GetProperty("Comparer").GetValue(x);
-                var defComparer = typeof(EqualityComparer<>).MakeGenericTypeFast(keyType).GetProperty("Default", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                object comparer;
+                if (x.GetType().GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                {
+                    comparer = x.GetFieldOrProperty("Comparer");
+                }
+                else
+                { 
+                    comparer = x.GetFieldOrProperty("m_comparer");
+                }
+                var defComparer = typeof(EqualityComparer<>).MakeGenericTypeFast(keyType).GetFieldOrProperty("Default");
                 ser.WriteObjectInternal(comparer == defComparer ? null : comparer);
 
                 foreach (System.Collections.DictionaryEntry item in x)
@@ -358,7 +369,14 @@ namespace Shaman.Runtime.Serialization
 
                 var count = des.ReadObjectInternal<int>();
                 var comparer = des.ReadObjectInternal<object>();
-                var dict = (System.Collections.IDictionary)Activator.CreateInstance(type, new object[] { count, comparer });
+
+                var defComparer = typeof(EqualityComparer<>).MakeGenericTypeFast(keyType).GetFieldOrProperty("Default");
+
+
+                var dict = (System.Collections.IDictionary)(type.GetGenericTypeDefinition() == typeof(ConcurrentDictionary<,>)
+                    ? type.InvokeFunction(".ctor", 4 * Environment.ProcessorCount, count, comparer ?? defComparer)
+                    : type.InvokeFunction(".ctor", count, comparer ?? defComparer)
+                );
                 for (int i = 0; i < count; i++)
                 {
                     var key = des.ReadObjectInternal(keyType);
@@ -366,7 +384,7 @@ namespace Shaman.Runtime.Serialization
                     dict.Add(key, value);
                 }
                 return dict;
-            }, typeof(Dictionary<,>));
+            }, new[] { typeof(Dictionary<,>), typeof(ConcurrentDictionary<,>) });
 
 
 
@@ -404,7 +422,26 @@ namespace Shaman.Runtime.Serialization
                 return (System.Collections.IEnumerable)set;
             }, typeof(HashSet<>));
 
-
+#if !STANDALONE
+            SetUpCustomSerialization<ListExtractionAttribute>((ser, attr) =>
+            {
+                ser.WriteObjectInternal(attr.OwnerField);
+                ser.WriteObjectInternal(attr.OwnerType);
+                ser.WriteObjectInternal(attr.SortOrder, typeof(SortOrder));
+                var idx = attr.OwnerField != null ? attr.OwnerField.ListDefinition.IndexOf(attr) : attr.OwnerType.ListDefinition.IndexOf(attr);
+                if (idx == -1) throw new Exception("Attribute not found.");
+                ser.WriteObjectInternal(idx, typeof(int));
+            }, des =>
+            {
+                var field = des.ReadObjectInternal<Field>();
+                var type = des.ReadObjectInternal<EntityType>();
+                var sortOrder = des.ReadObjectInternal<SortOrder>();
+                var idx = des.ReadObjectInternal<int>();
+                var attr = field != null ? field.ListDefinition.ElementAt(idx) : type.ListDefinition.ElementAt(idx);
+                if (attr.SortOrder != sortOrder) throw new Exception("Mismatching attribute during deserialization.");
+                return attr;
+            });
+#endif
 
             var CancellationTokenSource_timer = typeof(CancellationTokenSource).GetFields(BindingFlags.Instance | BindingFlags.NonPublic).First(x => x.Name == "timer" || x.Name == "m_timer");
             /*var Timer_due_time_ms = typeof(System.Threading.Timer).GetFields(BindingFlags.NonPublic | BindingFlags.Instance).FirstOrDefault(x => x.Name == "due_time_ms");
@@ -508,6 +545,7 @@ namespace Shaman.Runtime.Serialization
 
             SetUpForbiddenType<Shaman.Runtime.DetailSource>();
 #endif
+            
         }
 
         [Configuration]

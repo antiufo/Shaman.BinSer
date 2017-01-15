@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "Shaman.FileSystem": "1.0.1.1",
-    "Shaman.Reflection": "1.0.0.13",
+    "Shaman.Reflection": "1.0.0.20",
     "Shaman.Configuration.Metadata": "1.0.1.1",
     "Shaman.CommonExtensions": "1.0.1.1",
-    "Shaman.ValueString": "1.0.2.19",
-    "Shaman.Dom": "1.0.1.15"
+    "Shaman.ValueString": "1.0.2.21",
+    "Shaman.Dom": "1.0.1.17"
   },
   "frameworks": {
     "net45": {},

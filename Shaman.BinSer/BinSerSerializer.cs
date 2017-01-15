@@ -140,6 +140,20 @@ namespace Shaman.Runtime.Serialization
 
                 throw new Exception("Cannot serialize object graph: " + string.Join(" -> ", objectStack.Select(x => x.GetType().FullName)), ex);
             }
+            /*
+            Stats_ArraySizes.Select(x=> {
+
+                var size = IntPtr.Size;
+                try
+                {
+                    size = Marshal.SizeOf(x.Key);
+                }
+                catch { }
+
+                return new { ArrayType = x.Key, TotalSize = x.Value * size };
+            }).OrderByDescending(x => x.TotalSize).Take(100).ViewTable();
+            */
+            //Stats_ObjectCountByType.OrderByDescending(x => x.Value).Take(100).ViewTable();
         }
         private List<object> objectStack = new List<object>();
 
@@ -148,6 +162,11 @@ namespace Shaman.Runtime.Serialization
 
         internal void WriteObjectInternal(object obj, Type expectedType)
         {
+            if (obj != null && obj.GetType().IsArray && ((Array)obj).GetLength(0) > 100)
+            {
+
+            }
+
             Sanity.Assert(obj == null || obj.GetType() != PointerType);
 
             var type = obj != null ? obj.GetType() : null;
@@ -171,6 +190,7 @@ namespace Shaman.Runtime.Serialization
                         {
                         }
                     }
+                    //Stats_ObjectCountByType.Increment(obj.GetType());
                     bw.Write7BitEncodedLong(0);
 
                     lastObjectId++;
@@ -183,6 +203,7 @@ namespace Shaman.Runtime.Serialization
                     {
                         var arr = (Array)obj;
                         bw.Write7BitEncodedLong(arr.Length);
+                        //Stats_ArraySizes.Increment(arr.GetType(), arr.Length);
                         var elemType = type.GetElementType();
                         for (int i = 0; i < arr.Length; i++)
                         {
@@ -373,6 +394,9 @@ namespace Shaman.Runtime.Serialization
 
         [Configuration]
         public static readonly bool Configuration_WriteObjectListDuringSerialization = false;
+
+        //private Dictionary<Type, int> Stats_ObjectCountByType = new Dictionary<Type, int>();
+        //private Dictionary<Type, int> Stats_ArraySizes = new Dictionary<Type, int>();
 
         public static void WriteFile<T>(string path, T obj)
         {

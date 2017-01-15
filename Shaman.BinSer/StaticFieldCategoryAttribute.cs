@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace Shaman.Runtime
 {
-#if !STANDALONE
+#if !STANDALONE && !SALTARELLE
     [RestrictedAccess]
 #endif
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Event | AttributeTargets.Property)]
-#if STANDALONE
+#if STANDALONE || SALTARELLE
     internal
 #else
     public
@@ -20,7 +20,7 @@ namespace Shaman.Runtime
         public StaticFieldCategoryAttribute(StaticFieldCategory category) { }
     }
 
-#if STANDALONE
+#if STANDALONE || SALTARELLE
     internal
 #else
     [RestrictedAccess]
